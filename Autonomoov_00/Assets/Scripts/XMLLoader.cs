@@ -29,12 +29,14 @@ public class XMLLoader : MonoBehaviour
 
     public bool Initiate(SystemLanguage language)
     {
+        Debug.Log(System.IO.File.ReadAllText(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop)+"/Coucou.txt"));
+
         xmlFile = Resources.Load<TextAsset>("Parameters");
         if (xmlFile)
         {
             Debug.Log(xmlFile.text);
             xmlDocument.LoadXml((xmlFile.text));
-            foreach (XmlNode node in xmlDocument.ChildNodes[1])
+            foreach (XmlNode node in xmlDocument["root"])
             {
                 switch (node.Name) {
                     case "playersCount":
@@ -49,11 +51,11 @@ public class XMLLoader : MonoBehaviour
                         }
                     case "movement":
                         {
-                            if(node.InnerText == "L_HAND")
+                            if(node.InnerText == MOVEMENT.L_HAND.ToString())
                             {
                                 GameParameters.instance.SetMovement(MOVEMENT.L_HAND);
                             }
-                            if (node.InnerText == "R_HAND")
+                            if (node.InnerText == MOVEMENT.R_HAND.ToString())
                             {
                                 GameParameters.instance.SetMovement(MOVEMENT.R_HAND);
                             }

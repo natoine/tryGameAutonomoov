@@ -11,13 +11,13 @@ public enum MOVEMENT
 public class GameParameters : MonoBehaviour
 {
     public static GameParameters instance;
+
     private int _playerCount = 0;
     private int _timerInSeconds = 0;
     private MOVEMENT _requiredMovement = MOVEMENT.L_HAND;
 
     void Awake()
     {
-        Debug.Log("Coucou params");
         if (!instance)
         {
             instance = this;
