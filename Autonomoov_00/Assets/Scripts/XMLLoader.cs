@@ -11,7 +11,8 @@ public class XMLLoader : MonoBehaviour
      * Ce singleton charge le fichier XML des paramètres. 
      * </summary> */
     public static XMLLoader instance = null;
-    private TextAsset xmlFile;
+    private string xmlFile = "";
+    private string xmlFileName = "";
     private XmlDocument xmlDocument = new XmlDocument();
 
     void Start()
@@ -29,21 +30,37 @@ public class XMLLoader : MonoBehaviour
 
     public bool Initiate(SystemLanguage language)
     {
-        Debug.Log(System.IO.File.ReadAllText(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop)+"/Coucou.txt"));
-
-        xmlFile = Resources.Load<TextAsset>("Parameters");
-        if (xmlFile)
+        try
         {
-            Debug.Log(xmlFile.text);
-            xmlDocument.LoadXml((xmlFile.text));
+#if UNITY_EDITOR
+            xmlFile = (System.IO.File.ReadAllText(Path.Combine(Directory.GetParent(Application.dataPath).Parent.FullName, "Parameters.xml")));
+#elif UNITY_WINDOWS
+            xmlFile = (System.IO.File.ReadAllText(Path.Combine(Directory.GetParent(Application.dataPath).FullName, "launchparams.xml")));
+#endif
+            xmlFileName = "launchparams.xml";
+        }
+        catch (Exception)
+        {
+            Debug.LogError("Oh oh, pas de xml trouvé sur ce chemin");
+
+        }
+        new GameObject("UI Debug").AddComponent<UIDebug>();
+
+
+        //xmlFile = Resources.Load<TextAsset>("Parameters");
+        if (xmlFile != null && xmlFile != "")
+        {
+            Debug.Log(xmlFile);
+            xmlDocument.LoadXml((xmlFile));
             foreach (XmlNode node in xmlDocument["root"])
             {
-                switch (node.Name) {
+                switch (node.Name)
+                {
                     case "playersCount":
                         {
-                        GameParameters.instance.SetPlayerCount(int.Parse(node.InnerText));
-                        break;
-                    }
+                            GameParameters.instance.SetPlayerCount(int.Parse(node.InnerText));
+                            break;
+                        }
                     case "timer":
                         {
                             GameParameters.instance.SetTimer(int.Parse(node.InnerText));
@@ -51,7 +68,7 @@ public class XMLLoader : MonoBehaviour
                         }
                     case "movement":
                         {
-                            if(node.InnerText == MOVEMENT.L_HAND.ToString())
+                            if (node.InnerText == "")
                             {
                                 GameParameters.instance.SetMovement(MOVEMENT.L_HAND);
                             }
@@ -69,11 +86,17 @@ public class XMLLoader : MonoBehaviour
 
             return true;
         }
+        else Debug.LogError("Oh oh, pas de xml trouvé sur ce chemin");
         return false;
     }
 
     public XmlDocument GetXmlDocument()
     {
         return xmlDocument;
+    }
+
+    public string GetXmlFileName()
+    {
+        return xmlFileName;
     }
 }

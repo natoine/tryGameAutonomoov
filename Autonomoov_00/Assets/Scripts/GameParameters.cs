@@ -21,6 +21,7 @@ public class GameParameters : MonoBehaviour
         if (!instance)
         {
             instance = this;
+            DontDestroyOnLoad(this);
         }
         else
         {

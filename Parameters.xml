@@ -1,0 +1,6 @@
+<?xml version = "1.0" encoding="UTF-8" standalone="yes" ?>
+<root>
+  <playersCount>2</playersCount>
+  <timer>30</timer>
+  <movement>R_HAND</movement>
+</root>
