@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -10,34 +11,54 @@ public class PostConnection : MonoBehaviour
     {
         GetComponent<Button>().onClick.AddListener(delegate
         {
-            StartCoroutine(Upload());
+            ScoreManager.instance._endGameTime = Time.time;
+            Time.timeScale = 0;
+            Upload();
         });
         
     }
 
-    IEnumerator Upload()
+    void Upload()
     {
-        List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
-        for(int i = 0; i < GameParameters.instance.GetPlayerCount(); i++)
-        {
-            formData.Add(new MultipartFormDataSection(string.Concat("player",(i+1)), ScoreManager.instance.GetPlayerScore(i).GetPoints().ToString()));
-        }
-        Debug.Log(formData[0].ToString());
-        UnityWebRequest www = new UnityWebRequest();
-#if UNITY_WINDOWS || UNITY_EDITOR
-        www = UnityWebRequest.Post("localhost:8080/startgame/agameforwindows", formData);
-#elif UNITY_LINUX
-        www = UnityWebRequest.Post("localhost:8080/startgame/agameforlinux", formData);
-#endif
-        yield return www.SendWebRequest();
+        string JsonArraystring = "{\"Game\": [{\"name\":\""+Application.productName+ "\",\"params_playercount\":\""+ GameParameters.instance.GetPlayerCount().ToString()+
+            "\",\"params_timer\":\"" + string.Format("{0:00}:{1:00}:{2:00}", GameParameters.instance.GetTimer() / 3600, GameParameters.instance.GetTimer() / 60,  GameParameters.instance.GetTimer() % 60) + 
+            "\",\"params_movement\":\"" + GameParameters.instance.GetMovementString()+
+            "\",\"launchingdate\":\"" + GameParameters.instance.GetDateTime() +
+            "\",\"gametimer\":\"" + string.Format("{0:00}:{1:00}:{2:00}", ScoreManager.instance.GetEndGameTime() / 3600, ScoreManager.instance.GetEndGameTime() / 60, ScoreManager.instance.GetEndGameTime() % 60) +
+            "\",\"playersPicturePath\":\"" + "/Temp_Data" +
+            "\",\"playersScores\":[";
 
-        if (www.isNetworkError || www.isHttpError)
+        for (int i = 0; i < GameParameters.instance.GetPlayerCount(); i++)
         {
-            Debug.Log(www.error);
+            JsonArraystring += "\"" + ScoreManager.instance.GetPlayerScore(i).GetPoints().ToString() + "\"";
+            if (i != GameParameters.instance.GetPlayerCount() - 1)
+            {
+                JsonArraystring += ",";
+            }
+        }
+        JsonArraystring += "]}]}";
+        Debug.Log(JsonArraystring);
+        Dictionary<string, string> headers = new Dictionary<string, string>();
+        headers.Add("Content-Type", "application/json");
+        byte[] body = Encoding.UTF8.GetBytes(JsonArraystring);
+
+        WWW www = new WWW("localhost:8080/gameresult/" + Application.productName, body, headers);
+        
+        Debug.Log("localhost:8080/gameresult/" + Application.productName);
+
+        StartCoroutine(PostdataEnumerator(www));
+    }
+
+    IEnumerator PostdataEnumerator(WWW www)
+    {
+        yield return www;
+        if (www.error != null)
+        {
+            Debug.Log("Data Submitted");
         }
         else
         {
-            Debug.Log("Form upload complete!");
+            Debug.Log(www.error);
         }
     }
 }

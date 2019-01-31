@@ -30,14 +30,11 @@ public class XMLLoader : MonoBehaviour
 
     public bool Initiate(SystemLanguage language)
     {
+        xmlFileName = "launchparams.xml";
+
         try
         {
-#if UNITY_EDITOR
-            xmlFile = (System.IO.File.ReadAllText(Path.Combine(Directory.GetParent(Application.dataPath).Parent.FullName, "Parameters.xml")));
-#elif UNITY_WINDOWS
-            xmlFile = (System.IO.File.ReadAllText(Path.Combine(Directory.GetParent(Application.dataPath).FullName, "launchparams.xml")));
-#endif
-            xmlFileName = "launchparams.xml";
+              xmlFile = (System.IO.File.ReadAllText(Path.Combine(Directory.GetParent(Application.dataPath).FullName, xmlFileName)));
         }
         catch (Exception)
         {
@@ -47,13 +44,13 @@ public class XMLLoader : MonoBehaviour
         new GameObject("UI Debug").AddComponent<UIDebug>();
 
 
-        //xmlFile = Resources.Load<TextAsset>("Parameters");
         if (xmlFile != null && xmlFile != "")
         {
             Debug.Log(xmlFile);
             xmlDocument.LoadXml((xmlFile));
             foreach (XmlNode node in xmlDocument["root"])
             {
+                Debug.Log(node.Name);
                 switch (node.Name)
                 {
                     case "playersCount":
@@ -63,16 +60,16 @@ public class XMLLoader : MonoBehaviour
                         }
                     case "timer":
                         {
-                            GameParameters.instance.SetTimer(int.Parse(node.InnerText));
+                            GameParameters.instance.SetTimer(DateTime.Parse(node.InnerText).Second + DateTime.Parse(node.InnerText).Minute*60 + DateTime.Parse(node.InnerText).Hour * 3600);
                             break;
                         }
                     case "movement":
                         {
-                            if (node.InnerText == "")
+                            if (node.InnerText == "left hand")
                             {
                                 GameParameters.instance.SetMovement(MOVEMENT.L_HAND);
                             }
-                            if (node.InnerText == MOVEMENT.R_HAND.ToString())
+                            if (node.InnerText == "right hand")
                             {
                                 GameParameters.instance.SetMovement(MOVEMENT.R_HAND);
                             }
@@ -82,7 +79,7 @@ public class XMLLoader : MonoBehaviour
             }
             Debug.Log("Registred player count = " + GameParameters.instance.GetPlayerCount());
             Debug.Log("Registred timer in seconds = " + GameParameters.instance.GetTimer());
-            Debug.Log("Registred movement = " + GameParameters.instance.GetMovement().ToString());
+            Debug.Log("Registred movement = " + GameParameters.instance.GetMovementString().ToString());
 
             return true;
         }

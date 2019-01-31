@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class ButtonGoTo : MonoBehaviour
 { 
-    public Object scene;
+    public string scene;
 
     void Start()
     {
@@ -15,10 +15,10 @@ public class ButtonGoTo : MonoBehaviour
     
     void GoTo()
     {
-        if(name == "Quit")
+        if(scene == "Quit")
         {
             Application.Quit();
         }
-        SceneManager.LoadScene(scene.name);
+        SceneManager.LoadScene(scene);
     }
 }

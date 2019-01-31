@@ -243,7 +243,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9448ced7d69bbb4ca8c7f9ef80c3d3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scene: {fileID: 0}
+  scene: Quit
 --- !u!1 &170076733
 GameObject:
   m_ObjectHideFlags: 0
@@ -648,7 +648,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9448ced7d69bbb4ca8c7f9ef80c3d3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scene: {fileID: 102900000, guid: e4945aa98434fe34491fd74aa3518a67, type: 3}
+  scene: Game
 --- !u!1 &676884983
 GameObject:
   m_ObjectHideFlags: 0
@@ -728,7 +728,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 676884983}
   m_CullTransparentMesh: 0
---- !u!1 &868100874
+--- !u!1 &718871257
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -736,36 +736,47 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 868100876}
-  - component: {fileID: 868100875}
+  - component: {fileID: 718871259}
+  - component: {fileID: 718871258}
   m_Layer: 0
-  m_Name: UIDebug
+  m_Name: Picture Loader
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &868100875
+--- !u!114 &718871258
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 868100874}
+  m_GameObject: {fileID: 718871257}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66fc6d9b001147f478e2cc630345e7de, type: 3}
+  m_Script: {fileID: 11500000, guid: b9b04cfd12096fb4c8099a430a06eba6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!4 &868100876
+  _tempDirectory: 
+  photo:
+  - {fileID: 21300000, guid: 871ebf1d39008cb438d346923a04b6ed, type: 3}
+  - {fileID: 21300000, guid: 3cee3ff740ab3a74388e4adbc3bf6434, type: 3}
+  - {fileID: 21300000, guid: f69ddd003ffcb6844b66000c5ec3d121, type: 3}
+  - {fileID: 21300000, guid: 4751a74e9bd52b94d9c89e26a49336e7, type: 3}
+  avatars:
+  - {fileID: 2800000, guid: 871ebf1d39008cb438d346923a04b6ed, type: 3}
+  - {fileID: 2800000, guid: 3cee3ff740ab3a74388e4adbc3bf6434, type: 3}
+  - {fileID: 2800000, guid: f69ddd003ffcb6844b66000c5ec3d121, type: 3}
+  - {fileID: 2800000, guid: 4751a74e9bd52b94d9c89e26a49336e7, type: 3}
+--- !u!4 &718871259
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 868100874}
+  m_GameObject: {fileID: 718871257}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 508.37103, y: 647.5445, z: -5.5195312}
+  m_LocalPosition: {x: 411.557, y: 295.5681, z: -2.1679077}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -978,6 +989,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c34266eb78dec34196b16c358359f4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tempDataPath: 
 --- !u!4 &1210615538
 Transform:
   m_ObjectHideFlags: 0
