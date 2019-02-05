@@ -28,14 +28,15 @@ public class PictureLoader : MonoBehaviour
         {
             Directory.CreateDirectory(_tempDirectory);
         }
-        for (int i = 0; i < photo.Length; i++)
-        {
-            Texture2D tex = new Texture2D(avatars[i].width, avatars[i].height, TextureFormat.RGB24, false);
-            tex.SetPixels(avatars[i].GetPixels(0, 0, avatars[i].width, avatars[i].height));
-            tex.Apply();
-            byte[] png = tex.EncodeToPNG();
-            File.WriteAllBytes(_tempDirectory + "/Player" + (i + 1) + ".png", png);
-        }
+    }
+
+    void LoadPicture(Texture2D texture, int player)
+    {
+        /*Texture2D tex = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false);
+        tex.SetPixels(avatars[i].GetPixels(0, 0, avatars[i].width, avatars[i].height));
+        tex.Apply();*/
+        byte[] png = texture.EncodeToPNG();
+        File.WriteAllBytes(_tempDirectory + "/Player" + (player + 1) + ".png", png);
 
     }
 }

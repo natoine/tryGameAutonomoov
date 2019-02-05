@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,12 +8,31 @@ public class BodySelection : MonoBehaviour
 {
     [SerializeField]
     Text ToSelectUI;
+    [SerializeField]
+    int photoWidth;
+    [SerializeField]
+    int photoHeight;
+    [SerializeField]
+    GameObject Player1;
+    [SerializeField]
+    GameObject Player2;
+    [SerializeField]
+    GameObject Player3;
+    [SerializeField]
+    GameObject Player4;
+
     BodySourceView _bodyView;
+    int totalPlayers = 0;
+
+    
+
+
     int count = 0;
     bool isSelecting = false;
 
     void Start()
     {
+        //totalPlayers = GameParameters.instance.GetPlayerCount();
         _bodyView = GameObject.Find("BodyView").GetComponent<BodySourceView>();
         GetComponent<Button>().onClick.AddListener(delegate
         {
@@ -34,7 +54,7 @@ public class BodySelection : MonoBehaviour
         else if(GetComponent<Button>().interactable && _bodyView.GetTrackedBodiesCount() == 0)
         {
             GetComponent<Button>().interactable = false;
-            ToSelectUI.text = "Pas de selection";
+            ToSelectUI.text = "Pas de selection possible";
 
         }
 
@@ -48,6 +68,7 @@ public class BodySelection : MonoBehaviour
                 if(Physics.Raycast(new Ray(Camera.main.ScreenPointToRay(Input.mousePosition).origin, Camera.main.ScreenPointToRay(Input.mousePosition).direction * 500f), out hitInfo))
                 {
                     Debug.Log("Mr " + hitInfo.transform.gameObject.name + " est enregistré comme Player "+(count+1));
+                    TakePhoto(hitInfo.transform.gameObject);
                     _bodyView.AssignBody(count, ulong.Parse(hitInfo.transform.gameObject.name));
                     count++;
                     if(count < _bodyView.GetTrackedBodiesCount())
@@ -62,11 +83,58 @@ public class BodySelection : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("Plouf");
+                    Debug.Log("Aucun joueur n'a été touché");
                 }
             }
         }
     }
 
+    void TakePhoto(GameObject body)
+    {
+        RaycastHit hitInfo;
+        Vector3 centerPhoto;
+        if (Physics.Raycast(new Ray(Camera.main.transform.position, body.transform.position*500f), out hitInfo))
+        {
+            //Get the coordinates of the hit in percentage
+            centerPhoto = hitInfo.textureCoord;
+            //Get the Camera render mesh texture
+            Texture2D tex = (Texture2D)hitInfo.collider.gameObject.GetComponent<Renderer>().material.mainTexture;
+            Texture2D photo = new Texture2D(photoWidth, photoHeight, TextureFormat.RGB24, false);
+            //Get the actual texture coordinates
+            Vector2 coord = new Vector2(((1 - centerPhoto.x) * tex.width), (centerPhoto.y * tex.height));
+            //Print pixels in new texture
+            photo.SetPixels(tex.GetPixels((int)(coord.x - (photoWidth/2)) , (int)(coord.y) , photoWidth, photoHeight));
+            photo.Apply();
+            //Invert pixel order so it's not vertically flipped, convert it in png format
+            Texture2D result = InvertPixels(photo);
+            byte[] png = result.EncodeToPNG();
+            //Saves the png file in Temp_Data directory
+            File.WriteAllBytes(Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp_Data") + "/Player" + (count + 1) + ".png", png);
+            //Displays photo new to correct player number
+            GameObject player;
+            switch (count+1)
+            {
+                case 2: { player = Player2; break; }
+                case 3: { player = Player3; break; }
+                case 4: { player = Player4; break; }
+                default: { player = Player1; break; }
+            }
+            player.SetActive(true);
+            player.GetComponentInChildren<Image>().sprite = Sprite.Create(result, new Rect(0, 0, result.width, result.height), new Vector2(0.5f, 0.5f));
+        }
+    }
 
+    Texture2D InvertPixels(Texture2D photo)
+    {
+        Texture2D result = new Texture2D(photo.width, photo.height);
+        for (int i = 0; i < result.width; i++)
+        {
+            for (int j = 0; j < result.height; j++)
+            {
+                result.SetPixel(i, result.height - j - 1, photo.GetPixel(i, j));
+            }
+        }
+        result.Apply();
+        return result;
+    }
 }

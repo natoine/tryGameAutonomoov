@@ -108,7 +108,7 @@ public class BodySourceView : MonoBehaviour
                     {
                         if (_PlayersId.ContainsKey(i) && _PlayersId[i] == trackingId)
                         {
-                            markers[i].color = new Color(1f, 1f, 1f, 0f);
+                            //markers[i].color = new Color(1f, 1f, 1f, 0f);
                             _PlayersId.Remove(i);
                         }
                     }
@@ -205,10 +205,12 @@ public class BodySourceView : MonoBehaviour
             if (GetPlayerFromId(body.TrackingId) != -1)
             {
                 bodyObject.transform.GetChild(0).transform.position = GetVector3FromJoint(body.Joints[Kinect.JointType.Head]);
-                markers[GetPlayerFromId(body.TrackingId)].transform.position = GetVector3FromJoint(body.Joints[Kinect.JointType.Head]);
-                markers[GetPlayerFromId(body.TrackingId)].color = new Color(1f, 1f, 1f, 1f);
+               /* if (markers.Length > 0)
+                {
+                    markers[GetPlayerFromId(body.TrackingId)].transform.position = GetVector3FromJoint(body.Joints[Kinect.JointType.Head]);
+                    markers[GetPlayerFromId(body.TrackingId)].color = new Color(1f, 1f, 1f, 1f);
+                }*/
             }
-
         }
     }
     
@@ -285,7 +287,7 @@ public class BodySourceView : MonoBehaviour
     {
         if (_PlayersId.ContainsKey(id))
         {
-            markers[id].color = new Color(1f, 1f, 1f, 0f);
+            //markers[id].color = new Color(1f, 1f, 1f, 0f);
             _PlayersId.Remove(id);
             _PlayersId.Add(id, tracker);
         } else
