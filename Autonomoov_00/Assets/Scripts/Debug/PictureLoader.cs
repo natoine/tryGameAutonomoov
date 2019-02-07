@@ -32,11 +32,10 @@ public class PictureLoader : MonoBehaviour
 
     void LoadPicture(Texture2D texture, int player)
     {
-        /*Texture2D tex = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false);
-        tex.SetPixels(avatars[i].GetPixels(0, 0, avatars[i].width, avatars[i].height));
-        tex.Apply();*/
+        Texture2D tex = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false);
+        tex.SetPixels(avatars[player].GetPixels(0, 0, avatars[player].width, avatars[player].height));
+        tex.Apply();
         byte[] png = texture.EncodeToPNG();
         File.WriteAllBytes(_tempDirectory + "/Player" + (player + 1) + ".png", png);
-
     }
 }

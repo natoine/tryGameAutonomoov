@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class XMLLoader : MonoBehaviour
 {
@@ -41,8 +42,6 @@ public class XMLLoader : MonoBehaviour
             Debug.LogError("Oh oh, pas de xml trouvé sur ce chemin");
 
         }
-        new GameObject("UI Debug").AddComponent<UIDebug>();
-
 
         if (xmlFile != null && xmlFile != "")
         {
@@ -80,7 +79,7 @@ public class XMLLoader : MonoBehaviour
             Debug.Log("Registred player count = " + GameParameters.instance.GetPlayerCount());
             Debug.Log("Registred timer in seconds = " + GameParameters.instance.GetTimer());
             Debug.Log("Registred movement = " + GameParameters.instance.GetMovementString().ToString());
-
+            new GameObject("UI Debug").AddComponent<UIDebug>();
             return true;
         }
         else Debug.LogError("Oh oh, pas de xml trouvé sur ce chemin");

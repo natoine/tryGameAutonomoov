@@ -10,16 +10,14 @@ public class BodySourceView : MonoBehaviour
     public GameObject BodySourceManager;
     public GameObject JointPrefab;
     public GameObject ColliderPrefab;
+    public GameObject PlayersSelection;
 
     private Dictionary<ulong, GameObject> _Bodies = new Dictionary<ulong, GameObject>();
     private Dictionary<int, ulong> _PlayersId = new Dictionary<int, ulong>();
     private BodySourceManager _BodyManager;
 
     [SerializeField]
-    private SpriteRenderer[] markers;
-    [SerializeField]
-    private Text playersCountUI;
-
+    private SpriteRenderer[] _Markers;
 
     private Dictionary<Kinect.JointType, Kinect.JointType> _BoneMap = new Dictionary<Kinect.JointType, Kinect.JointType>()
     {
@@ -86,7 +84,7 @@ public class BodySourceView : MonoBehaviour
                 trackedIds.Add (body.TrackingId);
             }
         }
-        playersCountUI.text = (trackedIds.Count) + " Joueurs";
+
 
         #endregion
 
@@ -108,7 +106,8 @@ public class BodySourceView : MonoBehaviour
                     {
                         if (_PlayersId.ContainsKey(i) && _PlayersId[i] == trackingId)
                         {
-                            //markers[i].color = new Color(1f, 1f, 1f, 0f);
+                            _Markers[i].gameObject.SetActive(false);
+                            PlayersManager.instance.ResetPlayer(trackingId);
                             _PlayersId.Remove(i);
                         }
                     }
@@ -129,16 +128,23 @@ public class BodySourceView : MonoBehaviour
             if(body.IsTracked)
             {
                 //if body isn't tracked, create body
-                if(!_Bodies.ContainsKey(body.TrackingId))
+                if (PlayersSelection.activeInHierarchy && !_Bodies.ContainsKey(body.TrackingId))
                 {
                     _Bodies[body.TrackingId] = CreateBodyObject(body.TrackingId);
+                    RefreshBodyObject(body, _Bodies[body.TrackingId]);
                 }
-                //Update positions
-                RefreshBodyObject(body, _Bodies[body.TrackingId]);
+                else if (_Bodies.ContainsKey(body.TrackingId))
+                {
+                    //Update positions
+                    RefreshBodyObject(body, _Bodies[body.TrackingId]);
+                }
             }
         }
 
-
+        if(!PlayersSelection.activeInHierarchy && (_PlayersId.Count != GameParameters.instance.GetPlayerCount()))
+        {
+            GameObject.FindObjectOfType<PauseGame>().Pause();
+        }
 
         #endregion
     }
@@ -190,26 +196,26 @@ public class BodySourceView : MonoBehaviour
             // Get joint, set new position
             Transform jointObj = bodyObject.transform.Find(jt.ToString());
             jointObj.localPosition = GetVector3FromJoint(sourceJoint);
-
-            LineRenderer lr = jointObj.GetComponent<LineRenderer>();
-            if (targetJoint.HasValue)
+            if (PlayersSelection.activeInHierarchy)
             {
-                lr.SetPosition(0, jointObj.localPosition);
-                lr.SetPosition(1, GetVector3FromJoint(targetJoint.Value));
-                lr.SetColors(GetColorForState(sourceJoint.TrackingState), GetColorForState(targetJoint.Value.TrackingState));
+                LineRenderer lr = jointObj.GetComponent<LineRenderer>();
+                if (targetJoint.HasValue)
+                {
+                    lr.SetPosition(0, jointObj.localPosition);
+                    lr.SetPosition(1, GetVector3FromJoint(targetJoint.Value));
+                    lr.SetColors(GetColorForState(sourceJoint.TrackingState), GetColorForState(targetJoint.Value.TrackingState));
+                }
+                else
+                {
+                    lr.enabled = false;
+                }
             }
-            else
-            {
-                lr.enabled = false;
-            }
+            bodyObject.transform.GetChild(0).transform.position = GetVector3FromJoint(body.Joints[Kinect.JointType.Head]);
             if (GetPlayerFromId(body.TrackingId) != -1)
             {
-                bodyObject.transform.GetChild(0).transform.position = GetVector3FromJoint(body.Joints[Kinect.JointType.Head]);
-               /* if (markers.Length > 0)
-                {
-                    markers[GetPlayerFromId(body.TrackingId)].transform.position = GetVector3FromJoint(body.Joints[Kinect.JointType.Head]);
-                    markers[GetPlayerFromId(body.TrackingId)].color = new Color(1f, 1f, 1f, 1f);
-                }*/
+                if (!_Markers[GetPlayerFromId(body.TrackingId)].gameObject.activeInHierarchy) { _Markers[GetPlayerFromId(body.TrackingId)].gameObject.SetActive(true); }
+                _Markers[GetPlayerFromId(body.TrackingId)].GetComponent<SpriteRenderer>().color = PlayersManager.instance.GetPlayerColor(GetPlayerFromId(body.TrackingId));
+                _Markers[GetPlayerFromId(body.TrackingId)].transform.position = Camera.main.ScreenToWorldPoint(Camera.main.WorldToScreenPoint(GetVector3FromJoint(body.Joints[Kinect.JointType.HandRight])));
             }
         }
     }
@@ -248,22 +254,11 @@ public class BodySourceView : MonoBehaviour
 
     private int GetPlayerFromId(ulong trackingId)
     {
-        if (!_PlayersId.ContainsValue(trackingId))
+        for (int i = 0; i < _PlayersId.Count; i++)
         {
-            int id = FirstAvailableId();
-            if (id != -1)
+            if (_PlayersId.ContainsKey(i) && _PlayersId[i] == trackingId)
             {
-                _PlayersId.Add(id, trackingId);
-                return id;
-            }
-        } else
-        {
-            for (int i = 0; i < _PlayersId.Count; i++)
-            {
-                if (_PlayersId.ContainsKey(i) && _PlayersId[i] == trackingId)
-                {
-                    return i;
-                }
+                return i;
             }
         }
         return -1;
@@ -274,12 +269,11 @@ public class BodySourceView : MonoBehaviour
         return _Bodies.Count;
     }
 
-    public void HideUnusedImage()
+    public void ResetMarkers()
     {
-        for (int i = 0; i < markers.Length; i++)
+        for (int i = 0; i < _Markers.Length; i++)
         {
-            Color hide = new Color(0, 0, 0, 0);
-            markers[i].color = hide;
+            _Markers[i].gameObject.SetActive(false);
         }
     }
 
@@ -287,12 +281,39 @@ public class BodySourceView : MonoBehaviour
     {
         if (_PlayersId.ContainsKey(id))
         {
-            //markers[id].color = new Color(1f, 1f, 1f, 0f);
             _PlayersId.Remove(id);
             _PlayersId.Add(id, tracker);
         } else
         {
             _PlayersId.Add(id, tracker);
         }
+    }
+
+    public void DisableSkeletonView()
+    {
+        foreach(GameObject body in _Bodies.Values)
+        {
+            foreach(CircleCollider2D joint in body.GetComponentsInChildren<CircleCollider2D>())
+            {
+                joint.gameObject.GetComponent<MeshRenderer>().enabled = false;
+                joint.gameObject.GetComponent<LineRenderer>().enabled = false;
+            }
+        }
+    }
+
+    public void EnableSkeletonView()
+    {
+        foreach(GameObject body in _Bodies.Values)
+        {
+            foreach(CircleCollider2D joint in body.GetComponentsInChildren<CircleCollider2D>())
+            {
+                joint.gameObject.GetComponent<MeshRenderer>().enabled = true;
+                joint.gameObject.GetComponent<LineRenderer>().enabled = true;
+            }
+        }
+    }
+    public SpriteRenderer[] GetMarkers()
+    {
+        return _Markers;
     }
 }

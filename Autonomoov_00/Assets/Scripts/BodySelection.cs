@@ -13,45 +13,38 @@ public class BodySelection : MonoBehaviour
     [SerializeField]
     int photoHeight;
     [SerializeField]
-    GameObject Player1;
-    [SerializeField]
-    GameObject Player2;
-    [SerializeField]
-    GameObject Player3;
-    [SerializeField]
-    GameObject Player4;
+    GameObject[] PlayersAvatar;
 
     BodySourceView _bodyView;
     int totalPlayers = 0;
-
     
-
 
     int count = 0;
     bool isSelecting = false;
 
     void Start()
     {
-        //totalPlayers = GameParameters.instance.GetPlayerCount();
+        totalPlayers = GameParameters.instance.GetPlayerCount();
         _bodyView = GameObject.Find("BodyView").GetComponent<BodySourceView>();
         GetComponent<Button>().onClick.AddListener(delegate
         {
             count = 0;
             isSelecting = true;
-            _bodyView.HideUnusedImage();
-            ToSelectUI.text = "Selectionner joueur " + (count+1) + " / " + _bodyView.GetTrackedBodiesCount();
+            _bodyView.ResetMarkers();
+            PlayersManager.instance.InitPlayers();
+            ToSelectUI.text = "Selectionner joueur " + (count + 1) + " / " + _bodyView.GetTrackedBodiesCount();
             GetComponent<Button>().interactable = false;
         });
     }
 
     void Update()
     {
-        if(!GetComponent<Button>().interactable && _bodyView.GetTrackedBodiesCount() > 0)
+        if (!GetComponent<Button>().interactable && _bodyView.GetTrackedBodiesCount() > 0)
         {
             GetComponent<Button>().interactable = true;
 
         }
-        else if(GetComponent<Button>().interactable && _bodyView.GetTrackedBodiesCount() == 0)
+        else if (GetComponent<Button>().interactable && _bodyView.GetTrackedBodiesCount() == 0)
         {
             GetComponent<Button>().interactable = false;
             ToSelectUI.text = "Pas de selection possible";
@@ -65,20 +58,22 @@ public class BodySelection : MonoBehaviour
                 Debug.Log("Clic !");
                 RaycastHit hitInfo;
                 Debug.DrawRay(Camera.main.ScreenPointToRay(Input.mousePosition).origin, Camera.main.ScreenPointToRay(Input.mousePosition).direction * 500f, Color.red);
-                if(Physics.Raycast(new Ray(Camera.main.ScreenPointToRay(Input.mousePosition).origin, Camera.main.ScreenPointToRay(Input.mousePosition).direction * 500f), out hitInfo))
+                if (Physics.Raycast(new Ray(Camera.main.ScreenPointToRay(Input.mousePosition).origin, Camera.main.ScreenPointToRay(Input.mousePosition).direction * 500f), out hitInfo) && hitInfo.transform.name != "ColorView")
                 {
-                    Debug.Log("Mr " + hitInfo.transform.gameObject.name + " est enregistré comme Player "+(count+1));
+                    Debug.Log("Mr " + hitInfo.transform.gameObject.name + " est enregistré comme Player " + (count + 1));
                     TakePhoto(hitInfo.transform.gameObject);
                     _bodyView.AssignBody(count, ulong.Parse(hitInfo.transform.gameObject.name));
+                    PlayersManager.instance.AddPlayer(ulong.Parse(hitInfo.transform.gameObject.name));
                     count++;
-                    if(count < _bodyView.GetTrackedBodiesCount())
+                    if (count < _bodyView.GetTrackedBodiesCount())
                     {
                         ToSelectUI.text = "Selectionner joueur " + (count) + " / " + _bodyView.GetTrackedBodiesCount();
                     }
                     else
                     {
-                        ToSelectUI.text = count + " joueur(s) selectionné(s)";
+                        ToSelectUI.text = count + " joueur(s) selectionné(s), cliquez pour jouer pour commencer !";
                         GetComponent<Button>().interactable = true;
+                        GameObject.Find("PlayButton").GetComponent<Button>().interactable = true;
                     }
                 }
                 else
@@ -87,13 +82,17 @@ public class BodySelection : MonoBehaviour
                 }
             }
         }
+        if (count == totalPlayers)
+        {
+            ToSelectUI.text = count + " joueur(s) selectionné(s), cliquez pour jouer pour commencer !";
+        }
     }
 
     void TakePhoto(GameObject body)
     {
         RaycastHit hitInfo;
         Vector3 centerPhoto;
-        if (Physics.Raycast(new Ray(Camera.main.transform.position, body.transform.position*500f), out hitInfo))
+        if (Physics.Raycast(new Ray(Camera.main.transform.position, body.transform.position * 500f), out hitInfo))
         {
             //Get the coordinates of the hit in percentage
             centerPhoto = hitInfo.textureCoord;
@@ -103,7 +102,7 @@ public class BodySelection : MonoBehaviour
             //Get the actual texture coordinates
             Vector2 coord = new Vector2(((1 - centerPhoto.x) * tex.width), (centerPhoto.y * tex.height));
             //Print pixels in new texture
-            photo.SetPixels(tex.GetPixels((int)(coord.x - (photoWidth/2)) , (int)(coord.y) , photoWidth, photoHeight));
+            photo.SetPixels(tex.GetPixels((int)(coord.x - (photoWidth / 2)), (int)(coord.y), photoWidth, photoHeight));
             photo.Apply();
             //Invert pixel order so it's not vertically flipped, convert it in png format
             Texture2D result = InvertPixels(photo);
@@ -111,16 +110,8 @@ public class BodySelection : MonoBehaviour
             //Saves the png file in Temp_Data directory
             File.WriteAllBytes(Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp_Data") + "/Player" + (count + 1) + ".png", png);
             //Displays photo new to correct player number
-            GameObject player;
-            switch (count+1)
-            {
-                case 2: { player = Player2; break; }
-                case 3: { player = Player3; break; }
-                case 4: { player = Player4; break; }
-                default: { player = Player1; break; }
-            }
-            player.SetActive(true);
-            player.GetComponentInChildren<Image>().sprite = Sprite.Create(result, new Rect(0, 0, result.width, result.height), new Vector2(0.5f, 0.5f));
+            PlayersAvatar[count].SetActive(true);
+            PlayersAvatar[count].transform.GetChild(0).GetComponent<Image>().sprite = Sprite.Create(result, new Rect(0, 0, result.width, result.height), new Vector2(0.5f, 0.5f));
         }
     }
 
