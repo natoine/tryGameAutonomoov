@@ -57,8 +57,8 @@ public class BodySelection : MonoBehaviour
             {
                 Debug.Log("Clic !");
                 RaycastHit hitInfo;
-                Debug.DrawRay(Camera.main.ScreenPointToRay(Input.mousePosition).origin, Camera.main.ScreenPointToRay(Input.mousePosition).direction * 500f, Color.red);
-                if (Physics.Raycast(new Ray(Camera.main.ScreenPointToRay(Input.mousePosition).origin, Camera.main.ScreenPointToRay(Input.mousePosition).direction * 500f), out hitInfo) && hitInfo.transform.name != "ColorView")
+                Debug.DrawRay(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -3.0f)).origin, Camera.main.ScreenPointToRay(Input.mousePosition).direction * 500f, Color.red, Mathf.Infinity);
+                if (Physics.Raycast(new Ray(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -3.0f)).origin, Camera.main.ScreenPointToRay(Input.mousePosition).direction * 500f), out hitInfo) && hitInfo.transform.name != "ColorView")
                 {
                     Debug.Log("Mr " + hitInfo.transform.gameObject.name + " est enregistré comme Player " + (count + 1));
                     TakePhoto(hitInfo.transform.gameObject);
@@ -69,12 +69,6 @@ public class BodySelection : MonoBehaviour
                     {
                         ToSelectUI.text = "Selectionner joueur " + (count) + " / " + _bodyView.GetTrackedBodiesCount();
                     }
-                    else
-                    {
-                        ToSelectUI.text = count + " joueur(s) selectionné(s), cliquez pour jouer pour commencer !";
-                        GetComponent<Button>().interactable = true;
-                        GameObject.Find("PlayButton").GetComponent<Button>().interactable = true;
-                    }
                 }
                 else
                 {
@@ -84,6 +78,9 @@ public class BodySelection : MonoBehaviour
         }
         if (count == totalPlayers)
         {
+            ToSelectUI.text = count + " joueur(s) selectionné(s), cliquez pour jouer pour commencer !";
+            GetComponent<Button>().interactable = true;
+            GameObject.Find("PlayButton").GetComponent<Button>().interactable = true;
             ToSelectUI.text = count + " joueur(s) selectionné(s), cliquez pour jouer pour commencer !";
         }
     }
@@ -102,7 +99,7 @@ public class BodySelection : MonoBehaviour
             //Get the actual texture coordinates
             Vector2 coord = new Vector2(((1 - centerPhoto.x) * tex.width), (centerPhoto.y * tex.height));
             //Print pixels in new texture
-            photo.SetPixels(tex.GetPixels((int)(coord.x - (photoWidth / 2)), (int)(coord.y), photoWidth, photoHeight));
+            photo.SetPixels(tex.GetPixels((int)Mathf.Min(tex.width - photoWidth,  Mathf.Max(0, coord.x - (photoWidth / 2))), (int)Mathf.Min((tex.height - photoHeight), Mathf.Max(0, (coord.y))), photoWidth, photoHeight));
             photo.Apply();
             //Invert pixel order so it's not vertically flipped, convert it in png format
             Texture2D result = InvertPixels(photo);
