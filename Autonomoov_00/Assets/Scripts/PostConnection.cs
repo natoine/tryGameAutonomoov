@@ -11,7 +11,6 @@ public class PostConnection : MonoBehaviour
     {
         GetComponent<Button>().onClick.AddListener(delegate
         {
-            ScoreManager.instance._endGameTime = Time.time;
             Time.timeScale = 0;
             Upload();
         });
