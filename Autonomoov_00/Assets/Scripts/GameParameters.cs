@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System;
 using UnityEngine;
 
 public enum MOVEMENT
@@ -9,20 +7,22 @@ public enum MOVEMENT
     L_HAND
 }
 
+[Serializable]
 public class GameParameters : MonoBehaviour
 {
     public static GameParameters instance;
     public string tempDataPath;
-    private int _playerCount = 0;
-    private int _timerInSeconds = 0;
-    private MOVEMENT _requiredMovement;
-    private System.DateTime dateTime = System.DateTime.UtcNow;
+    public int playersNb = 0;
+    public int timer = 0;
+    public string movement;
+    private MOVEMENT requiredMovement;
+    private DateTime dateTime = DateTime.UtcNow;
+
     void Awake()
     {
         if (!instance)
         {
             instance = this;
-            tempDataPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp_Data");
             DontDestroyOnLoad(this);
         }
         else
@@ -31,36 +31,42 @@ public class GameParameters : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        requiredMovement = (MOVEMENT)Enum.Parse(typeof(MOVEMENT), movement);
+    }
+
     public int GetPlayerCount()
     {
-        return _playerCount;
+        return playersNb;
     }
     public void SetPlayerCount(int count)
     {
-        _playerCount = count;
+        playersNb = count;
     }
 
     public int GetTimer()
     {
-        return _timerInSeconds;
+        return timer;
     }
     public void SetTimer(int timer)
     {
-        _timerInSeconds = timer;
+        this.timer = timer;
     }
 
     public string GetMovementString()
     {
-        switch(_requiredMovement)
+        return requiredMovement.ToString();
+        /*switch (requiredMovement)
         {
-            case MOVEMENT.L_HAND: { return "left hand"; }
-            case MOVEMENT.R_HAND: { return "right hand"; }
-            default: return "left hand";
-        }
+            case MOVEMENT.L_HAND: { return "L_HAND"; }
+            case MOVEMENT.R_HAND: { return "R_HAND"; }
+            default: return "L_HAND";
+        }*/
     }
     public void SetMovement(MOVEMENT movement)
     {
-        _requiredMovement = movement;
+        requiredMovement = movement;
     }
 
     public string GetDateTime()
